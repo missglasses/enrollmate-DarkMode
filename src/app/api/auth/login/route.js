@@ -12,7 +12,7 @@ import { supabase } from '../../../../lib/supabase.js';
  * POST /api/auth/login
  * Authenticate user with email and password
  */
-export async function POST(request) {
+export async function POST(request) { //extracs email & pass from request 
   try {
     const { email, password } = await request.json();
 

@@ -6,36 +6,37 @@ import { supabase } from '../../../src/lib/supabase';
 import UserCourseAPI from '../../../lib/api/userCourseAPI';
 import Link from 'next/link';
 
-export default function CoursesPage() {
-  const router = useRouter();
-  const [currentUser, setCurrentUser] = useState(null);
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sourceFilter, setSourceFilter] = useState('all');
+export default function CoursesPage() { 
+  const router = useRouter(); //navigates login page if user hasnt logged in; redirects to ligin
+  const [currentUser, setCurrentUser] = useState(null); //stores user data
+  const [courses, setCourses] = useState([]); //stores courses data
+  const [loading, setLoading] = useState(true);//indicates page is loading
+  const [searchTerm, setSearchTerm] = useState(''); //
+  const [sourceFilter, setSourceFilter] = useState('all'); //filters courses by source
   const [stats, setStats] = useState({ total: 0, manual: 0, csv: 0, extension: 0, remaining: 50 });
-  const [deletingId, setDeletingId] = useState(null);
-  const [showDependencies, setShowDependencies] = useState(null);
-  const [dependencies, setDependencies] = useState([]);
-  const [message, setMessage] = useState('');
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [importTab, setImportTab] = useState('csv'); // 'csv' or 'manual'
-  const [importing, setImporting] = useState(false);
-  const [selectedCourses, setSelectedCourses] = useState([]);
-  const [manualCourseForm, setManualCourseForm] = useState({
-    courseCode: '',
-    courseName: '',
+  const [deletingId, setDeletingId] = useState(null); //stores course id being deleted 
+  const [showDependencies, setShowDependencies] = useState(null); //shows dependecies modal
+  const [dependencies, setDependencies] = useState([]);//stoes dependeines
+  const [message, setMessage] = useState(''); //display mess
+  const [showImportModal, setShowImportModal] = useState(false); //
+  const [importTab, setImportTab] = useState('csv'); // 'csv' or 'manual' 
+  const [importing, setImporting] = useState(false);//shows import progress
+  const [selectedCourses, setSelectedCourses] = useState([]); //stores selecred c
+
+  const [manualCourseForm, setManualCourseForm] = useState({ 
+    courseCode: '', //
+    courseName: '', 
     sectionGroup: '',
-    schedule: '',
+    schedule: '', 
     enrolledCurrent: '',
     enrolledTotal: '',
     room: '',
     instructor: ''
-  });
+  }); //upd via onchange 
 
   // Load user and courses
-  useEffect(() => {
-    const loadUserAndCourses = async () => {
+  useEffect(() => { //fetches user and course from db
+    const loadUserAndCourses = async () => { 
       try {
         // Get current user
         const { data: { user } } = await supabase.auth.getUser();

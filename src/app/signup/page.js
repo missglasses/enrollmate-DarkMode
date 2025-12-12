@@ -1,26 +1,29 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { supabase } from '../../lib/supabase';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import Link from "next/link";
+import { supabase } from "../../lib/supabase";
+import { useRouter } from "next/navigation";
+import AuthPageBackground from "../../components/AuthPageBackground";
+import { useDarkMode } from "../../lib/useDarkMode";
 
 export default function SignupPage() {
+  const { isDarkMode } = useDarkMode();
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    middleInitial: '',
-    email: '',
-    studentId: '',
-    password: '',
-    confirmPassword: '',
+    firstName: "",
+    lastName: "",
+    middleInitial: "",
+    email: "",
+    studentId: "",
+    password: "",
+    confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const inputClasses =
-    'w-full h-12 px-4 rounded-2xl border border-gray-200 bg-white/90 text-[#2B2B2B] placeholder:text-gray-400 outline-none shadow-sm focus:ring-2 focus:ring-[#9DF313]/60 focus:border-[#9DF313] transition';
+    "w-full h-12 px-4 rounded-2xl border border-gray-200 bg-white/90 text-[#2B2B2B] placeholder:text-gray-400 outline-none shadow-sm focus:ring-2 focus:ring-[#9DF313]/60 focus:border-[#9DF313] transition";
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -32,7 +35,7 @@ export default function SignupPage() {
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
-        [name]: '',
+        [name]: "",
       }));
     }
   };
@@ -41,44 +44,47 @@ export default function SignupPage() {
     const newErrors = {};
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
+      newErrors.firstName = "First name is required";
     } else if (formData.firstName.trim().length < 2) {
-      newErrors.firstName = 'First name must be at least 2 characters';
+      newErrors.firstName = "First name must be at least 2 characters";
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
+      newErrors.lastName = "Last name is required";
     } else if (formData.lastName.trim().length < 2) {
-      newErrors.lastName = 'Last name must be at least 2 characters';
+      newErrors.lastName = "Last name must be at least 2 characters";
     }
 
     // Middle initial is optional, but if provided, should be 1 character
-    if (formData.middleInitial.trim() && formData.middleInitial.trim().length !== 1) {
-      newErrors.middleInitial = 'Middle initial must be a single character';
+    if (
+      formData.middleInitial.trim() &&
+      formData.middleInitial.trim().length !== 1
+    ) {
+      newErrors.middleInitial = "Middle initial must be a single character";
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (!formData.studentId.trim()) {
-      newErrors.studentId = 'Student ID is required';
+      newErrors.studentId = "Student ID is required";
     } else if (formData.studentId.trim().length < 3) {
-      newErrors.studentId = 'Student ID must be at least 3 characters';
+      newErrors.studentId = "Student ID must be at least 3 characters";
     }
 
     if (!formData.password.trim()) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     if (!formData.confirmPassword.trim()) {
-      newErrors.confirmPassword = 'Please confirm your password';
+      newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     setErrors(newErrors);
@@ -104,66 +110,66 @@ export default function SignupPage() {
       if (data.user) {
         // If no session, try to sign in the user
         if (!data.session) {
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-          });
+          const { data: signInData, error: signInError } =
+            await supabase.auth.signInWithPassword({
+              email: formData.email,
+              password: formData.password,
+            });
 
           if (signInError) {
-            setErrors({ general: 'Account created but sign in failed. Please check your email for confirmation or try logging in.' });
+            setErrors({
+              general:
+                "Account created but sign in failed. Please check your email for confirmation or try logging in.",
+            });
             return;
           }
         }
 
         // Insert into profiles table
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            middle_initial: formData.middleInitial || null,
-            student_id: formData.studentId,
-            usertype: 'student',
-          });
+        const { error: profileError } = await supabase.from("profiles").insert({
+          id: data.user.id,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          middle_initial: formData.middleInitial || null,
+          student_id: formData.studentId,
+          usertype: "student",
+        });
 
         if (profileError) {
-          setErrors({ general: 'Account created but profile setup failed. Please contact support.' });
+          setErrors({
+            general:
+              "Account created but profile setup failed. Please contact support.",
+          });
           return;
         }
 
         // Redirect to dashboard
-        router.push('/dashboard');
+        router.push("/dashboard");
       }
     } catch (err) {
-      setErrors({ general: 'An unexpected error occurred. Please try again.' });
+      setErrors({ general: "An unexpected error occurred. Please try again." });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Background with gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-enrollmate-bg-start to-enrollmate-bg-end" />
-
-      {/* Diamond decoration background */}
-      <div
-        className="absolute inset-0 opacity-56"
-        style={{
-          backgroundImage:
-            "url('/assets/images/login-background.png')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      />
+    <div
+      className={`min-h-screen relative overflow-hidden ${
+        isDarkMode ? "bg-[#3a3a3a]" : ""
+      }`}
+    >
+      <AuthPageBackground isDarkMode={isDarkMode} />
 
       {/* Main content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4 py-10">
         <div className="w-full max-w-2xl">
           <div className="flex justify-center relative z-20 -mb-14 sm:-mb-20">
-            <div className="rounded-full p-3 bg-white/95 border-4 border-[#9DF313] inline-flex items-center justify-center shadow-md">
+            <div
+              className={`rounded-full p-3 bg-white/95 border-4 transition-colors duration-300 inline-flex items-center justify-center shadow-md ${
+                isDarkMode ? "border-gray-300" : "border-[#9DF313]"
+              }`}
+            >
               <img
                 src="/assets/images/logo-or-icon.png"
                 alt="EnrollMate"
@@ -173,13 +179,15 @@ export default function SignupPage() {
           </div>
           {/* Card */}
           <div className="relative z-10 mt-10 sm:mt-12 bg-white/95 backdrop-blur rounded-3xl p-8 sm:p-12 shadow-xl border border-white/60">
-
             {/* Title */}
             <h1 className="text-[#1f2937] font-jakarta font-semibold tracking-tight text-3xl sm:text-4xl mb-6 text-center">
               Create your account
             </h1>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <form
+              onSubmit={handleSubmit}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-5"
+            >
               {/* Name Fields */}
               <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
@@ -192,7 +200,9 @@ export default function SignupPage() {
                     className={inputClasses}
                   />
                   {errors.firstName && (
-                    <p className="text-red-500 text-sm mt-1 ml-1">{errors.firstName}</p>
+                    <p className="text-red-500 text-sm mt-1 ml-1">
+                      {errors.firstName}
+                    </p>
                   )}
                 </div>
                 <div>
@@ -205,7 +215,9 @@ export default function SignupPage() {
                     className={inputClasses}
                   />
                   {errors.middleInitial && (
-                    <p className="text-red-500 text-sm mt-1 ml-1">{errors.middleInitial}</p>
+                    <p className="text-red-500 text-sm mt-1 ml-1">
+                      {errors.middleInitial}
+                    </p>
                   )}
                 </div>
                 <div>
@@ -218,7 +230,9 @@ export default function SignupPage() {
                     className={inputClasses}
                   />
                   {errors.lastName && (
-                    <p className="text-red-500 text-sm mt-1 ml-1">{errors.lastName}</p>
+                    <p className="text-red-500 text-sm mt-1 ml-1">
+                      {errors.lastName}
+                    </p>
                   )}
                 </div>
               </div>
@@ -234,7 +248,9 @@ export default function SignupPage() {
                   className={inputClasses}
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-sm mt-1 ml-1">{errors.email}</p>
+                  <p className="text-red-500 text-sm mt-1 ml-1">
+                    {errors.email}
+                  </p>
                 )}
               </div>
 
@@ -249,7 +265,9 @@ export default function SignupPage() {
                   className={inputClasses}
                 />
                 {errors.studentId && (
-                  <p className="text-red-500 text-sm mt-1 ml-1">{errors.studentId}</p>
+                  <p className="text-red-500 text-sm mt-1 ml-1">
+                    {errors.studentId}
+                  </p>
                 )}
               </div>
 
@@ -264,7 +282,9 @@ export default function SignupPage() {
                   className={inputClasses}
                 />
                 {errors.password && (
-                  <p className="text-red-500 text-sm mt-1 ml-1">{errors.password}</p>
+                  <p className="text-red-500 text-sm mt-1 ml-1">
+                    {errors.password}
+                  </p>
                 )}
               </div>
 
@@ -279,7 +299,9 @@ export default function SignupPage() {
                   className={inputClasses}
                 />
                 {errors.confirmPassword && (
-                  <p className="text-red-500 text-sm mt-1 ml-1">{errors.confirmPassword}</p>
+                  <p className="text-red-500 text-sm mt-1 ml-1">
+                    {errors.confirmPassword}
+                  </p>
                 )}
               </div>
 
@@ -288,18 +310,24 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-[#9DF313] to-[#7CB342] text-white font-jakarta font-medium text-lg py-3 rounded-2xl shadow-sm hover:shadow-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full font-jakarta font-medium text-lg py-3 rounded-2xl shadow-sm hover:shadow-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isDarkMode
+                      ? "bg-white text-black hover:bg-gray-100"
+                      : "bg-gradient-to-r from-[#9DF313] to-[#7CB342] text-white hover:opacity-90"
+                  }`}
                 >
-                  {loading ? 'Creating account...' : 'Create account'}
+                  {loading ? "Creating account..." : "Create account"}
                 </button>
                 {errors.general && (
-                  <p className="text-red-500 text-sm mt-2 text-center">{errors.general}</p>
+                  <p className="text-red-500 text-sm mt-2 text-center">
+                    {errors.general}
+                  </p>
                 )}
               </div>
 
               {/* Login Link */}
               <p className="sm:col-span-2 text-center text-[#374151] font-jakarta text-sm">
-                Already have an account?{' '}
+                Already have an account?{" "}
                 <Link href="/login" className="text-[#0ea5e9] hover:underline">
                   Log in
                 </Link>

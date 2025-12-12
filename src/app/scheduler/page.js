@@ -13,11 +13,12 @@ import { SemesterAPI } from '../../../lib/api/semesterAPI.js';
 import { ScheduleAPI } from '../../../lib/api/scheduleAPI.js';
 import UserCourseAPI from '../../../lib/api/userCourseAPI.js';
 import PDFExporter from '../../../lib/utils/pdfExporter.js';
+import { useDarkMode } from '../../lib/useDarkmode.js';
 
 /**
  * CourseLibraryModal Component - Modal for importing courses from user's library
  */
-function CourseLibraryModal({ userId, onImport, onClose }) {
+function CourseLibraryModal({ userId, onImport, onClose, isDarkMode }) {
   const [libraryCourses, setLibraryCourses] = useState([]);
   const [selectedCourses, setSelectedCourses] = useState(new Set());
   const [loading, setLoading] = useState(true);
@@ -59,12 +60,18 @@ function CourseLibraryModal({ userId, onImport, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-3xl p-8 max-w-4xl w-full max-h-[80vh] overflow-hidden shadow-2xl">
+      <div className={`rounded-3xl p-8 max-w-4xl w-full max-h-[80vh] overflow-hidden shadow-2xl transition-colors duration-300 ${
+        isDarkMode ? 'bg-[#3a3a3a]' : 'bg-white'
+      }`}>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-jakarta font-bold text-enrollmate-green">📚 Import from Course Library</h2>
+          <h2 className={`text-3xl font-jakarta font-bold ${
+            isDarkMode ? 'text-white' : 'text-enrollmate-green'
+          }`}>📚 Import from Course Library</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
+            className={`text-2xl transition-colors ${
+              isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-500 hover:text-gray-700'
+            }`}
           >
             ✕
           </button>
@@ -76,35 +83,53 @@ function CourseLibraryModal({ userId, onImport, onClose }) {
           placeholder="Search courses..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-3 mb-4 border-2 border-enrollmate-green/30 rounded-xl focus:outline-none focus:border-enrollmate-green font-jakarta"
+          className={`w-full px-4 py-3 mb-4 border-2 rounded-xl focus:outline-none font-jakarta transition-colors ${
+            isDarkMode 
+              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-enrollmate-green' 
+              : 'border-enrollmate-green/30 focus:border-enrollmate-green'
+          }`}
         />
 
         {loading ? (
-          <div className="text-center py-12 text-gray-600 font-jakarta">Loading courses...</div>
+          <div className={`text-center py-12 font-jakarta ${
+            isDarkMode ? 'text-gray-300' : 'text-gray-600'
+          }`}>Loading courses...</div>
         ) : filteredCourses.length === 0 ? (
-          <div className="text-center py-12 text-gray-600 font-jakarta">No courses in your library</div>
+          <div className={`text-center py-12 font-jakarta ${
+            isDarkMode ? 'text-gray-300' : 'text-gray-600'
+          }`}>No courses in your library</div>
         ) : (
           <>
-            <div className="overflow-y-auto max-h-96 mb-6 border-2 border-enrollmate-green/20 rounded-xl">
+            <div className={`overflow-y-auto max-h-96 mb-6 border-2 rounded-xl transition-colors ${
+              isDarkMode ? 'border-gray-600' : 'border-enrollmate-green/20'
+            }`}>
               {filteredCourses.map((course) => (
                 <div
                   key={course.id}
                   onClick={() => toggleCourse(course.id)}
-                  className={`p-4 cursor-pointer transition-colors hover:bg-enrollmate-green/10 border-b border-gray-200 ${
-                    selectedCourses.has(course.id) ? 'bg-enrollmate-green/20' : ''
+                  className={`p-4 cursor-pointer transition-colors border-b ${
+                    isDarkMode
+                      ? `hover:bg-gray-700 border-gray-600 ${selectedCourses.has(course.id) ? 'bg-gray-700' : ''}`
+                      : `hover:bg-enrollmate-green/10 border-gray-200 ${selectedCourses.has(course.id) ? 'bg-enrollmate-green/20' : ''}`
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="font-jakarta font-bold text-lg text-gray-800">
+                      <div className={`font-jakarta font-bold text-lg ${
+                        isDarkMode ? 'text-white' : 'text-gray-800'
+                      }`}>
                         {course.course_code} - {course.course_name}
                       </div>
-                      <div className="text-sm font-jakarta text-gray-600 mt-1">
+                      <div className={`text-sm font-jakarta mt-1 ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                      }`}>
                         Section {course.section_group} • {course.schedule}
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="text-sm font-jakarta text-gray-500">
+                      <span className={`text-sm font-jakarta ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
                         {course.enrolled_current}/{course.enrolled_total}
                       </span>
                       <input
@@ -120,13 +145,19 @@ function CourseLibraryModal({ userId, onImport, onClose }) {
             </div>
 
             <div className="flex justify-between items-center">
-              <div className="text-gray-600 font-jakarta">
+              <div className={`font-jakarta ${
+                isDarkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>
                 {selectedCourses.size} course{selectedCourses.size !== 1 ? 's' : ''} selected
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={onClose}
-                  className="px-6 py-3 bg-gray-300 text-gray-700 font-jakarta font-bold rounded-xl hover:bg-gray-400 transition-all"
+                  className={`px-6 py-3 font-jakarta font-bold rounded-xl transition-all ${
+                    isDarkMode
+                      ? 'bg-gray-600 text-white hover:bg-gray-500'
+                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  }`}
                 >
                   Cancel
                 </button>
@@ -149,7 +180,7 @@ function CourseLibraryModal({ userId, onImport, onClose }) {
 /**
  * CourseInputPanel Component - Left side panel for adding courses and sections
  */
-function CourseInputPanel({ courses, setCourses, currentUser }) {
+function CourseInputPanel({ courses, setCourses, currentUser, isDarkMode }) {
   const [newCourse, setNewCourse] = useState({
     courseCode: '',
     courseName: '',
@@ -360,9 +391,15 @@ function CourseInputPanel({ courses, setCourses, currentUser }) {
   };
 
   return (
-    <div className="bg-white/95 backdrop-blur-sm p-6 lg:p-8 rounded-3xl shadow-2xl border border-white/20">
+    <div className={`backdrop-blur-sm p-6 lg:p-8 rounded-3xl shadow-2xl border transition-colors duration-300 ${
+      isDarkMode 
+        ? 'bg-[#3a3a3a]/95 border-gray-600' 
+        : 'bg-white/95 border-white/20'
+    }`}>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl lg:text-3xl font-jakarta font-bold text-gray-800">Add Courses</h2>
+        <h2 className={`text-2xl lg:text-3xl font-jakarta font-bold ${
+          isDarkMode ? 'text-white' : 'text-gray-800'
+        }`}>Add Courses</h2>
 
         {/* CSV Import/Export Buttons */}
         <div className="flex gap-3">
@@ -398,6 +435,7 @@ function CourseInputPanel({ courses, setCourses, currentUser }) {
           userId={currentUser.id}
           onImport={handleImportFromLibrary}
           onClose={() => setShowLibraryModal(false)}
+          isDarkMode={isDarkMode}
         />
       )}
 
@@ -429,7 +467,9 @@ function CourseInputPanel({ courses, setCourses, currentUser }) {
 
         {/* Sections */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">Sections:</label>
+          <label className={`block text-sm font-medium ${
+            isDarkMode ? 'text-gray-300' : 'text-gray-700'
+          }`}>Sections:</label>
           {newCourse.sections.map((section, index) => (
             <div key={index} className="flex gap-2 items-center">
               <input
@@ -481,15 +521,23 @@ function CourseInputPanel({ courses, setCourses, currentUser }) {
 
       {/* Added Courses List */}
       <div className="space-y-3">
-        <h3 className="font-medium text-gray-700">Added Courses ({courses.length})</h3>
+        <h3 className={`font-medium ${
+          isDarkMode ? 'text-gray-300' : 'text-gray-700'
+        }`}>Added Courses ({courses.length})</h3>
         {courses.map((course, courseIndex) => (
-          <div key={courseIndex} className="p-3 bg-gray-50 rounded-lg">
+          <div key={courseIndex} className={`p-3 rounded-lg ${
+            isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
+          }`}>
             <div className="flex justify-between items-start mb-2">
               <div>
-                <div className="font-medium text-gray-800">
+                <div className={`font-medium ${
+                  isDarkMode ? 'text-white' : 'text-gray-800'
+                }`}>
                   {course.courseCode} - {course.courseName}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className={`text-sm ${
+                  isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>
                   {course.sections.length} section{course.sections.length !== 1 ? 's' : ''}
                 </div>
               </div>
@@ -536,23 +584,33 @@ function CourseInputPanel({ courses, setCourses, currentUser }) {
 /**
  * ConstraintsPanel Component - Right side panel for schedule generation settings
  */
-function ConstraintsPanel({ constraints, setConstraints, onGenerate, isGenerating, coursesCount }) {
+function ConstraintsPanel({ constraints, setConstraints, onGenerate, isGenerating, coursesCount, isDarkMode }) {
   const updateConstraint = (field, value) => {
     setConstraints(prev => ({ ...prev, [field]: value }));
   };
 
   return (
-    <div className="bg-white/95 backdrop-blur-sm p-6 lg:p-8 rounded-3xl shadow-2xl border border-white/20">
-      <h2 className="text-2xl lg:text-3xl font-jakarta font-bold mb-6 text-gray-800">⚙️ Generation Settings</h2>
+    <div className={`backdrop-blur-sm p-6 lg:p-8 rounded-3xl shadow-2xl border transition-colors duration-300 ${
+      isDarkMode 
+        ? 'bg-[#3a3a3a]/95 border-gray-600' 
+        : 'bg-white/95 border-white/20'
+    }`}>
+      <h2 className={`text-2xl lg:text-3xl font-jakarta font-bold mb-6 ${
+        isDarkMode ? 'text-white' : 'text-gray-800'
+      }`}>⚙️ Generation Settings</h2>
 
       <div className="space-y-6">
         {/* Time Constraints */}
         <div className="space-y-4">
-          <h3 className="font-jakarta font-bold text-lg lg:text-xl text-gray-700">🕐 Time Preferences</h3>
+          <h3 className={`font-jakarta font-bold text-lg lg:text-xl ${
+            isDarkMode ? 'text-white' : 'text-gray-700'
+          }`}>🕐 Time Preferences</h3>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-base font-jakarta font-semibold text-gray-600 mb-2">Earliest Start</label>
+              <label className={`block text-base font-jakarta font-semibold mb-2 ${
+                isDarkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>Earliest Start</label>
               <input
                 type="time"
                 value={constraints.earliestStart}
@@ -562,7 +620,9 @@ function ConstraintsPanel({ constraints, setConstraints, onGenerate, isGeneratin
             </div>
 
             <div>
-              <label className="block text-base font-jakarta font-semibold text-gray-600 mb-2">Latest End</label>
+              <label className={`block text-base font-jakarta font-semibold mb-2 ${
+                isDarkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>Latest End</label>
               <input
                 type="time"
                 value={constraints.latestEnd}
@@ -575,30 +635,48 @@ function ConstraintsPanel({ constraints, setConstraints, onGenerate, isGeneratin
 
         {/* Enrollment Constraints */}
         <div className="space-y-4">
-          <h3 className="font-jakarta font-bold text-lg lg:text-xl text-gray-700">📊 Enrollment Options</h3>
+          <h3 className={`font-jakarta font-bold text-lg lg:text-xl ${
+            isDarkMode ? 'text-white' : 'text-gray-700'
+          }`}>📊 Enrollment Options</h3>
 
-          <label className="flex items-center p-3 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer transition-colors">
+          <label className={`flex items-center p-3 rounded-xl cursor-pointer transition-colors ${
+            isDarkMode 
+              ? 'bg-gray-700 hover:bg-gray-600' 
+              : 'bg-gray-50 hover:bg-gray-100'
+          }`}>
             <input
               type="checkbox"
               checked={constraints.allowFull}
               onChange={(e) => updateConstraint('allowFull', e.target.checked)}
               className="mr-3 w-5 h-5 text-enrollmate-green focus:ring-enrollmate-green rounded"
             />
-            <span className="text-base font-jakarta font-medium text-gray-700">Allow full sections</span>
+            <span className={`text-base font-jakarta font-medium ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>Allow full sections</span>
           </label>
 
-          <label className="flex items-center p-3 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer transition-colors">
+          <label className={`flex items-center p-3 rounded-xl cursor-pointer transition-colors ${
+            isDarkMode 
+              ? 'bg-gray-700 hover:bg-gray-600' 
+              : 'bg-gray-50 hover:bg-gray-100'
+          }`}>
             <input
               type="checkbox"
               checked={constraints.allowAtRisk}
               onChange={(e) => updateConstraint('allowAtRisk', e.target.checked)}
               className="mr-3 w-5 h-5 text-enrollmate-green focus:ring-enrollmate-green rounded"
             />
-            <span className="text-base font-jakarta font-medium text-gray-700">Allow at-risk sections</span>
+            <span className={`text-base font-jakarta font-medium ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>Allow at-risk sections</span>
           </label>
 
-          <div className="p-4 bg-gray-50 rounded-xl">
-            <label className="block text-base font-jakarta font-semibold text-gray-700 mb-3">
+          <div className={`p-4 rounded-xl ${
+            isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
+          }`}>
+            <label className={`block text-base font-jakarta font-semibold mb-3 ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Max full sections per schedule: <span className="text-enrollmate-green text-xl">{constraints.maxFullPerSchedule}</span>
             </label>
             <input
@@ -614,10 +692,16 @@ function ConstraintsPanel({ constraints, setConstraints, onGenerate, isGeneratin
 
         {/* Generation Limits */}
         <div className="space-y-4">
-          <h3 className="font-jakarta font-bold text-lg lg:text-xl text-gray-700">🎯 Generation Limits</h3>
+          <h3 className={`font-jakarta font-bold text-lg lg:text-xl ${
+            isDarkMode ? 'text-white' : 'text-gray-700'
+          }`}>🎯 Generation Limits</h3>
 
-          <div className="p-4 bg-gray-50 rounded-xl">
-            <label className="block text-base font-jakarta font-semibold text-gray-700 mb-3">
+          <div className={`p-4 rounded-xl ${
+            isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
+          }`}>
+            <label className={`block text-base font-jakarta font-semibold mb-3 ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Max schedules: <span className="text-enrollmate-green text-xl">{constraints.maxSchedules}</span>
             </label>
             <input
@@ -842,7 +926,7 @@ function TimetableGrid({ schedule }) {
 /**
  * ResultsPanel Component - Bottom section for displaying generated schedules
  */
-function ResultsPanel({ schedules, onSaveSchedule, onCopySchedule, onSaveToSemester, currentSemester }) {
+function ResultsPanel({ schedules, onSaveSchedule, onCopySchedule, onSaveToSemester, currentSemester, isDarkMode }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [sortBy, setSortBy] = useState('best');
 
@@ -884,13 +968,21 @@ function ResultsPanel({ schedules, onSaveSchedule, onCopySchedule, onSaveToSemes
   };
 
   return (
-    <div className="bg-white/95 backdrop-blur-sm p-6 lg:p-8 rounded-3xl shadow-2xl border border-white/20">
+    <div className={`backdrop-blur-sm p-6 lg:p-8 rounded-3xl shadow-2xl border transition-colors duration-300 ${
+      isDarkMode 
+        ? 'bg-[#3a3a3a]/95 border-gray-600' 
+        : 'bg-white/95 border-white/20'
+    }`}>
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
         <div>
-          <h2 className="text-3xl font-jakarta font-bold text-gray-800">
+          <h2 className={`text-3xl font-jakarta font-bold ${
+            isDarkMode ? 'text-white' : 'text-gray-800'
+          }`}>
             ✨ Generated Schedules ({filteredSchedules.length})
           </h2>
-          <div className="text-base font-jakarta text-gray-600 mt-2 space-x-4">
+          <div className={`text-base font-jakarta mt-2 space-x-4 ${
+            isDarkMode ? 'text-gray-300' : 'text-gray-600'
+          }`}>
             <span>📊 Total: <span className="font-bold text-enrollmate-green">{schedules.length}</span></span>
             <span>⏰ Ends by time: <span className="font-bold text-green-600">{schedules.filter(s => s.meta.endsByPreferred).length}</span></span>
             <span>🌙 Late: <span className="font-bold text-orange-600">{schedules.filter(s => s.meta.hasLate).length}</span></span>
@@ -1062,12 +1154,16 @@ function ResultsPanel({ schedules, onSaveSchedule, onCopySchedule, onSaveToSemes
 /**
  * SavedSchedulesView Component - Display user's saved schedules
  */
-function SavedSchedulesView({ savedSchedules, loading, currentUser, onLoad, onDelete }) {
+function SavedSchedulesView({ savedSchedules, loading, currentUser, onLoad, onDelete, isDarkMode }) {
   const [expandedScheduleId, setExpandedScheduleId] = useState(null);
 
   if (!currentUser) {
     return (
-      <div className="bg-white/95 backdrop-blur-sm p-10 rounded-3xl shadow-2xl border border-white/20 text-center">
+      <div className={`backdrop-blur-sm p-10 rounded-3xl shadow-2xl border text-center transition-colors duration-300 ${
+        isDarkMode 
+          ? 'bg-[#3a3a3a]/95 border-gray-600' 
+          : 'bg-white/95 border-white/20'
+      }`}>
         <div className="text-xl lg:text-2xl font-jakarta font-bold text-gray-700 mb-4">🔒 Please log in to view saved schedules</div>
         <p className="text-base lg:text-lg font-jakarta text-gray-500">You need to be logged in to save and view schedules</p>
       </div>
@@ -1076,38 +1172,62 @@ function SavedSchedulesView({ savedSchedules, loading, currentUser, onLoad, onDe
 
   if (loading) {
     return (
-      <div className="bg-white/95 backdrop-blur-sm p-10 rounded-3xl shadow-2xl border border-white/20 text-center">
-        <div className="text-xl lg:text-2xl font-jakarta font-bold text-gray-700">⏳ Loading saved schedules...</div>
+      <div className={`backdrop-blur-sm p-10 rounded-3xl shadow-2xl border text-center transition-colors duration-300 ${
+        isDarkMode 
+          ? 'bg-[#3a3a3a]/95 border-gray-600' 
+          : 'bg-white/95 border-white/20'
+      }`}>
+        <div className={`text-xl lg:text-2xl font-jakarta font-bold ${
+          isDarkMode ? 'text-white' : 'text-gray-700'
+        }`}>⏳ Loading saved schedules...</div>
       </div>
     );
   }
 
   if (savedSchedules.length === 0) {
     return (
-      <div className="bg-white/95 backdrop-blur-sm p-10 rounded-3xl shadow-2xl border border-white/20 text-center">
-        <div className="text-xl lg:text-2xl font-jakarta font-bold text-gray-700 mb-4">📭 No saved schedules yet</div>
-        <p className="text-base lg:text-lg font-jakarta text-gray-500">Generate and save schedules from the "Generate New" tab</p>
+      <div className={`backdrop-blur-sm p-10 rounded-3xl shadow-2xl border text-center transition-colors duration-300 ${
+        isDarkMode 
+          ? 'bg-[#3a3a3a]/95 border-gray-600' 
+          : 'bg-white/95 border-white/20'
+      }`}>
+        <div className={`text-xl lg:text-2xl font-jakarta font-bold mb-4 ${
+          isDarkMode ? 'text-white' : 'text-gray-700'
+        }`}>📭 No saved schedules yet</div>
+        <p className={`text-base lg:text-lg font-jakarta ${
+          isDarkMode ? 'text-gray-300' : 'text-gray-500'
+        }`}>Generate and save schedules from the "Generate New" tab</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="text-white font-jakarta font-bold text-xl lg:text-2xl mb-6 drop-shadow-md">
+      <div className={`font-jakarta font-bold text-xl lg:text-2xl mb-6 drop-shadow-md ${
+        isDarkMode ? 'text-white' : 'text-white'
+      }`}>
         💾 You have {savedSchedules.length} saved schedule{savedSchedules.length !== 1 ? 's' : ''}
       </div>
 
       <div className="space-y-6">
         {savedSchedules.map((savedSchedule) => (
-          <div key={savedSchedule.id} className="bg-white/95 backdrop-blur-sm border-2 border-white/30 rounded-3xl p-6 hover:shadow-2xl transition-all duration-300">
+          <div key={savedSchedule.id} className={`backdrop-blur-sm border-2 rounded-3xl p-6 hover:shadow-2xl transition-all duration-300 ${
+            isDarkMode 
+              ? 'bg-[#3a3a3a]/95 border-gray-600' 
+              : 'bg-white/95 border-white/30'
+          }`}>
             {/* Schedule Header */}
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
                 <h3 className="font-jakarta font-bold text-enrollmate-green text-xl lg:text-2xl">{savedSchedule.name}</h3>
-                <div className="text-base font-jakarta text-gray-500 mt-2">
+                <div className={`text-base font-jakarta mt-2 ${
+                  isDarkMode ? 'text-gray-300' : 'text-gray-500'
+                }`}>
                   📅 Created: {new Date(savedSchedule.created_at).toLocaleDateString()}
                 </div>
-                <div className="text-base font-jakarta font-medium text-gray-700 mt-1">
+                <div className={`text-base font-jakarta font-medium mt-1 ${
+                  isDarkMode ? 'text-gray-200' : 'text-gray-700'
+                }`}>
                   📚 {savedSchedule.sections_json.length} course{savedSchedule.sections_json.length !== 1 ? 's' : ''}
                 </div>
               </div>
@@ -1315,6 +1435,9 @@ function SavedScheduleTimetable({ schedule }) {
  * Main Scheduler Page Component
  */
 export default function SchedulerPage() {
+  // Dark mode state
+  const { isDarkMode } = useDarkMode();
+  
   // State for active tab
   const [activeTab, setActiveTab] = useState('generate'); // 'generate' or 'saved'
 
@@ -1647,9 +1770,17 @@ export default function SchedulerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-enrollmate-bg-start to-enrollmate-bg-end">
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDarkMode 
+        ? 'bg-[#3a3a3a]' 
+        : 'bg-gradient-to-br from-enrollmate-bg-start to-enrollmate-bg-end'
+    }`}>
       {/* Header */}
-      <header className="relative z-20 bg-gradient-to-r from-enrollmate-bg-start to-enrollmate-bg-end shadow-xl border-b border-white/10">
+      <header className={`relative z-20 shadow-xl border-b transition-colors duration-300 ${
+        isDarkMode 
+          ? 'bg-[#3a3a3a] border-gray-600' 
+          : 'bg-gradient-to-r from-enrollmate-bg-start to-enrollmate-bg-end border-white/10'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-24 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
@@ -1683,10 +1814,14 @@ export default function SchedulerPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         {/* Page Title */}
         <div className="text-center mb-8 lg:mb-12">
-          <h1 className="text-white font-jakarta font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl drop-shadow-lg mb-3">
+          <h1 className={`font-jakarta font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl drop-shadow-lg mb-3 ${
+            isDarkMode ? 'text-white' : 'text-white'
+          }`}>
             Course Scheduler
           </h1>
-          <p className="text-white/90 font-jakarta text-lg sm:text-xl lg:text-2xl drop-shadow-md">
+          <p className={`font-jakarta text-lg sm:text-xl lg:text-2xl drop-shadow-md ${
+            isDarkMode ? 'text-white/90' : 'text-white/90'
+          }`}>
             Generate conflict-free schedules using intelligent backtracking
           </p>
         </div>
@@ -1724,11 +1859,17 @@ export default function SchedulerPage() {
 
         {/* Status Message */}
         {message && (
-          <div className={`mb-6 p-5 rounded-2xl shadow-xl font-jakarta font-medium text-lg ${
+          <div className={`mb-6 p-5 rounded-2xl shadow-xl font-jakarta font-medium text-lg transition-colors duration-300 ${
             message.startsWith('✅')
-              ? 'bg-white text-enrollmate-green border-2 border-white'
+              ? isDarkMode 
+                ? 'bg-white text-enrollmate-green border-2 border-white' 
+                : 'bg-white text-enrollmate-green border-2 border-white'
               : message.startsWith('❌')
-              ? 'bg-white text-red-600 border-2 border-red-200'
+              ? isDarkMode
+                ? 'bg-white text-red-600 border-2 border-red-200'
+                : 'bg-white text-red-600 border-2 border-red-200'
+              : isDarkMode
+              ? 'bg-white text-blue-600 border-2 border-blue-200'
               : 'bg-white text-blue-600 border-2 border-blue-200'
           }`}>
             {message}
@@ -1741,7 +1882,7 @@ export default function SchedulerPage() {
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               {/* Left Panel - Course Input */}
-              <CourseInputPanel courses={courses} setCourses={setCourses} currentUser={currentUser} />
+              <CourseInputPanel courses={courses} setCourses={setCourses} currentUser={currentUser} isDarkMode={isDarkMode} />
 
               {/* Right Panel - Constraints */}
               <ConstraintsPanel
@@ -1750,6 +1891,7 @@ export default function SchedulerPage() {
                 onGenerate={generateSchedules}
                 isGenerating={isGenerating}
                 coursesCount={courses.length}
+                isDarkMode={isDarkMode}
               />
             </div>
 
@@ -1760,6 +1902,7 @@ export default function SchedulerPage() {
               onCopySchedule={copySchedule}
               onSaveToSemester={saveScheduleToSemester}
               currentSemester={currentSemester}
+              isDarkMode={isDarkMode}
             />
           </>
         ) : (
@@ -1769,6 +1912,7 @@ export default function SchedulerPage() {
             currentUser={currentUser}
             onLoad={loadSchedule}
             onDelete={deleteSavedSchedule}
+            isDarkMode={isDarkMode}
           />
         )}
       </div>
